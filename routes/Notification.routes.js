@@ -1,7 +1,7 @@
 // notificationRoutes.js
 const express = require('express');
 const router = express.Router();
-const notificationController = require('../../controllers/mangodb/notification.controllers.js');
+const notificationController = require('../controllers/notification.controllers');
 
 // Route pour envoyer une notification de test
 router.get('/sendNotificationVeille', notificationController.sendNotificationVeille);

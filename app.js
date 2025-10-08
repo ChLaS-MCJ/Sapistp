@@ -60,18 +60,11 @@ app.use('/api/pubs', pub_router);
 app.use('/api/communetarification', communetarification_router);
 app.use('/api/search', search_router);
 
-app.get('/status', (req, res) => {
-  res.json({ message: 'Application lancée avec succès!' });
-});
 
-//mango
-const adressemango_router = require('./routes/mangodb/Adresse.routes');
-const usermango_router = require('./routes/mangodb/User.routes');
+const appuser_router = require('./routes/App_User.routes');
+app.use('/api/mango/users', appuser_router);
 
-app.use('/api/mango/users', usermango_router);
-app.use('/api/adresse', adressemango_router);
-
-const notificationRouter = require('./routes/mangodb/Notification.routes');
+const notificationRouter = require('./routes/Notification.routes');
 app.use('/api/notification', notificationRouter);
 
 app.use('/api/images', express.static(path.join(__dirname, 'Assets/Images')));
@@ -82,6 +75,27 @@ app.use('/api/tracking', trackingRoutes);
 
 const individualmailRoutes = require('./routes/individual-email');
 app.use('/api/mailing', individualmailRoutes);
+
+router.get('/status', async (req, res) => {
+    try {
+        const mariaCount = await AppUser.count();
+        
+        // Connexion MongoDB temporaire
+        await mongoose.connect(process.env.MONGODB_URI);
+        const UserModel = require('../models/mangodb/user.models');
+        const mongoCount = await UserModel.countDocuments();
+        await mongoose.connection.close();
+        
+        res.json({
+            mongodb: mongoCount,
+            mariadb: mariaCount,
+            migrated: mariaCount,
+            remaining: mongoCount - mariaCount
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 
 module.exports = app;

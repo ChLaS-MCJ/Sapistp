@@ -3,9 +3,9 @@
  * Ce module contient toutes les fonctions relatives aux notifications
  */
 const { Op } = require('sequelize');
-const db = require('../../db.config');
 const admin = require('../../config/firebaseAdmin');
-const UserModel = require('../../models/mangodb/user.models');
+const db = require('../../db.config');
+const AppUser = db.AppUser;
 
 // Modèles de données
 const CollecteAdresseModel = db.CollecteAdresse;
@@ -545,7 +545,7 @@ async function sendFirebaseNotification(data) {
 exports.sendNotificationVeille = async (req, res) => {
     try {
         const now = new Date();
-        const users = await UserModel.find({});
+        const users = await AppUser.findAll();
 
         if (!users || users.length === 0) {
             return res.status(404).json({ message: 'No users found' });
@@ -586,7 +586,7 @@ exports.sendNotificationVeille = async (req, res) => {
                         user,
                         notification: notificationMessage,
                         notificationType: 'sortir',
-                        notificationId: `veille_${Date.now()}_${user._id}`
+						notificationId: `veille_${Date.now()}_${user.id}`
                     });
                     notificationsSent++;
                 }
@@ -610,7 +610,7 @@ exports.sendNotificationVeille = async (req, res) => {
 exports.sendNotificationRentrer = async (req, res) => {
     try {
         const now = new Date();
-        const users = await UserModel.find({});
+        const users = await AppUser.findAll();
 
         if (!users || users.length === 0) {
             return res.status(404).json({ message: 'No users found' });
@@ -648,7 +648,7 @@ exports.sendNotificationRentrer = async (req, res) => {
                     user,
                     notification: getNotificationMessage('rentrer'),
                     notificationType: 'rentrer',
-                    notificationId: `rentrer_${Date.now()}_${user._id}`
+                    notificationId: `rentrer_${Date.now()}_${user.id}`
                 });
                 notificationsSent++;
             }
@@ -670,7 +670,7 @@ exports.sendNotificationRentrer = async (req, res) => {
 exports.sendNotificationSortirLeMatin = async (req, res) => {
     try {
         const now = new Date();
-        const users = await UserModel.find({});
+        const users = await AppUser.findAll();
 
         if (!users || users.length === 0) {
             return res.status(404).json({ message: 'No users found' });
@@ -711,7 +711,7 @@ exports.sendNotificationSortirLeMatin = async (req, res) => {
                         user,
                         notification: notificationMessage,
                         notificationType: 'sortir',
-                        notificationId: `matin_${Date.now()}_${user._id}`
+                        notificationId: `matin_${Date.now()}_${user.id}`
                     });
                     notificationsSent++;
                 }
@@ -739,7 +739,7 @@ exports.checkCurrentCollections = async (req, res) => {
         const notificationType = req.query.type || 'sortir';
 
         // Récupérer l'utilisateur
-        const user = await UserModel.findOne({ idgoogle: userId });
+        const user = await AppUser.findOne({ where: { idgoogle: userId } });
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -887,7 +887,7 @@ exports.testWeeklyNotifications = async (req, res) => {
         }
 
         // Récupérer l'utilisateur spécifique
-        const user = await UserModel.findOne({ idgoogle: userId });
+        const user = await AppUser.findOne({ where: { idgoogle: userId } });
         if (!user) {
             return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
